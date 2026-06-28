@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, jsonify
-from g4f.client import Client
+import google.generativeai as genai
 
 app = Flask(__name__)
-client = Client()
 
-# Chat history to maintain context
-chat_history = [
-    {"role": "system", "content": "You are a helpful, smart, and accurate AI assistant. Answer the user's questions clearly."}
-]
+# Yahan apni copy ki hui Gemini API key daal 
+GEMINI_API_KEY = "AQ.Ab8RN6InpGfpJO0JYyAW-wvgU-EliJ6pV63mAghK6T_j-mhR8w"
+
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Model configuration
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route("/")
 def home():
@@ -19,20 +21,14 @@ def chat():
     if not user_message:
         return jsonify({"reply": "Please type something!"}), 400
 
-    chat_history.append({"role": "user", "content": user_message})
-
     try:
-        # Using free external AI model API instead of local heavy files
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=chat_history
-        )
-        bot_reply = response.choices[0].message.content
+        # Vercel compatible direct API request
+        response = model.generate_content(user_message)
+        bot_reply = response.text
     except Exception as e:
-        bot_reply = "Error: Unable to connect to the AI model on Vercel."
+        print(f"Error: {str(e)}")
+        bot_reply = "Error: Faceing some issues while fetching response. Please try again."
 
-    chat_history.append({"role": "assistant", "content": bot_reply})
     return jsonify({"reply": bot_reply})
 
-# Vercel serverless requirements ke liye handler add kiya
-app.debug = False
+    
