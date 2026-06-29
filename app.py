@@ -4,7 +4,7 @@ import requests
 
 app = Flask(__name__)
 
-# Aapki original Groq API Key yahan set ho gayi hai
+# Aapki Groq API Key
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "Gsk_hLDgDmutK4V1OG7NmH8LWGdyb3FYaiuv9z8TqZMmI9sZ3ljEQNlo")
 
 @app.route("/")
@@ -20,14 +20,13 @@ def chat():
     if not user_message:
         return jsonify({"reply": "Please type something!"}), 400
 
-    # Fast and Free Groq Endpoint
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
-        "model": "llama-3.1-8b-instant",  # Superfast model
+        "model": "llama-3.1-8b-instant",
         "messages": [{"role": "user", "content": user_message}]
     }
 
@@ -37,10 +36,13 @@ def chat():
         
         if "choices" in response_json:
             bot_reply = response_json["choices"][0]["message"]["content"]
+        elif "error" in response_json:
+            # Agar key ya account mein koi error hoga toh screen par dikhega
+            bot_reply = f"Groq Error: {response_json['error'].get('message', 'Unknown API Error')}"
         else:
-            bot_reply = "API Connected, but server is busy. Try again!"
+            bot_reply = "API connected, but response format is unexpected."
     except Exception as e:
-        bot_reply = "Backend error: Unable to connect to the free AI engine."
+        bot_reply = f"Backend error: {str(e)}"
 
     return jsonify({"reply": bot_reply})
 
