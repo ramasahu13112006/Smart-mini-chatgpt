@@ -4,7 +4,7 @@ import requests
 
 app = Flask(__name__)
 
-# Aapki Groq API Key
+# New Active Working API Key
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "Gsk_hLDgDmutK4V1OG7NmH8LWGdyb3FYaiuv9z8TqZMmI9sZ3ljEQNlo")
 
 @app.route("/")
@@ -37,7 +37,6 @@ def chat():
         if "choices" in response_json:
             bot_reply = response_json["choices"][0]["message"]["content"]
         elif "error" in response_json:
-            # Agar key ya account mein koi error hoga toh screen par dikhega
             bot_reply = f"Groq Error: {response_json['error'].get('message', 'Unknown API Error')}"
         else:
             bot_reply = "API connected, but response format is unexpected."
